@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Truth–Lie Experiment</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin-top: 80px;
+}
+#question {
+  font-size: 22px;
+}
+button {
+  font-size: 18px;
+  margin: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="question">Press START to begin</div>
+<button onclick="startExperiment()">START</button>
+
+<script>
+const questions = [
+  {text: "I was born in the month of _____ (TRUTH)", condition: "TRUTH"},
+  {text: "I currently live in _____ (TRUTH)", condition: "TRUTH"},
+  {text: "I prefer tea over coffee (Yes/No) (TRUTH)", condition: "TRUTH"},
+  {text: "I was born in the month of _____ (LIE)", condition: "LIE"},
+  {text: "I currently live in _____ (LIE)", condition: "LIE"},
+  {text: "I prefer tea over coffee (Yes/No) (LIE)", condition: "LIE"}
+];
+
+let current = 0;
+let startTime = 0;
+let data = [];
+
+function startExperiment() {
+  document.querySelector("button").style.display = "none";
+  showQuestion();
+}
+
+function showQuestion() {
+  if (current >= questions.length) {
+    endExperiment();
+    return;
+  }
+  document.getElementById("question").innerText = questions[current].text;
+  startTime = performance.now();
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "y" || e.key === "n") {
+    let rt = performance.now() - startTime;
+    data.push({
+      question: questions[current].text,
+      condition: questions[current].condition,
+      response: e.key.toUpperCase(),
+      reactionTime: Math.round(rt)
+    });
+    current++;
+    showQuestion();
+  }
+});
+
+function endExperiment() {
+  document.getElementById("question").innerText = "Experiment complete. Downloading data...";
+  downloadCSV();
+}
+
+function downloadCSV() {
+  let csv = "Question,Condition,Response,ReactionTime(ms)\n";
+  data.forEach(row => {
+    csv += `"${row.question}",${row.condition},${row.response},${row.reactionTime}\n`;
+  });
+
+  let blob = new Blob([csv], { type: "text/csv" });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "experiment_data.csv";
+  a.click();
+}
+</script>
+
+</body>
+</html>
